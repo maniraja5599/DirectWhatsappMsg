@@ -3,7 +3,7 @@ import CountryCodeSelector from './components/CountryCodeSelector';
 import MessageEditor from './components/MessageEditor';
 import SettingsModal from './components/SettingsModal';
 import Toast from './components/Toast';
-import { DEFAULT_COUNTRY_DIAL, detectCountryFromDigits, extractPhoneFromText, normalizePhoneNumber } from './lib/phone';
+import { DEFAULT_COUNTRY_DIAL, detectCountryFromDigits, extractPhoneFromText, getMaxNationalDigits, normalizePhoneNumber } from './lib/phone';
 import { MAX_MESSAGE_LENGTH, buildIntentUrl, buildWhatsAppUrl, packageForTarget, supportsAppIntents, type ChatAppTarget } from './lib/whatsapp';
 import { isIosDevice, readClipboardText, queryClipboardReadState } from './lib/clipboard';
 import { usePwaInstall } from './lib/pwa';
@@ -573,6 +573,18 @@ export default function App() {
               <>Tip: you can also long-press the field and choose Paste.</>
             )}
           </p>
+          {(() => {
+            const maxDigits = getMaxNationalDigits(countryCode);
+            const nationalLen = phone.replace(/\D/g, '').length;
+            if (maxDigits && nationalLen > maxDigits) {
+              return (
+                <p className="field-warn" role="alert">
+                  Maximum {maxDigits} digits allowed for this country. You entered {nationalLen}.
+                </p>
+              );
+            }
+            return null;
+          })()}
           {phoneError ? (
             <p className="field-error" id="phone-error" role="alert">
               {phoneError}

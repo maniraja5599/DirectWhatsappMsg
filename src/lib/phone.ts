@@ -206,6 +206,21 @@ export function getDefaultCountryDial(): string {
 }
 
 /**
+ * Max allowed national digits per country.
+ * Returns null when no strict limit is defined (allows up to 15 per E.164).
+ */
+export function getMaxNationalDigits(countryDial: string): number | null {
+  if (countryDial === '91') return 10; // India
+  if (countryDial === '1') return 10;  // USA/Canada
+  if (countryDial === '44') return 10; // UK
+  if (countryDial === '61') return 9;  // Australia
+  if (countryDial === '65') return 8;  // Singapore
+  if (countryDial === '971') return 9; // UAE
+  if (countryDial === '966') return 9; // Saudi
+  return null; // no strict limit
+}
+
+/**
  * Find the first valid phone number inside free-form text
  * (e.g. clipboard content like "Call me on +91 98765 43210 tomorrow").
  */
