@@ -1,4 +1,4 @@
-# PingGo — Chat Without Saving Contacts
+# WhatsGo — Chat Without Saving Contacts
 
 Mobile-first web app to open a WhatsApp chat for any mobile number, with an
 optional prefilled message and reusable saved messages. Private by design:

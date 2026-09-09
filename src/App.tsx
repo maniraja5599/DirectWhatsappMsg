@@ -383,21 +383,13 @@ export default function App() {
       <header className="topbar">
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" role="presentation">
-            <path
-              d="M10.5 33.5 53.5 10.5 35.5 53.5 28.5 40.5l-13 4z"
-              fill="#fff"
-            />
-            <path
-              d="M28.5 40.5 53.5 10.5"
-              stroke="#075E54"
-              stroke-width="3"
-              stroke-linecap="round"
-              fill="none"
-            />
+            <rect x="12" y="12" width="40" height="28" rx="10" fill="#fff" />
+            <path d="M24 40v9l9-9z" fill="#fff" />
+            <path d="M29 20l11 7-11 7z" fill="#075E54" />
           </svg>
         </span>
         <div>
-          <h1 className="brand-title">PingGo</h1>
+          <h1 className="brand-title">WhatsGo</h1>
           <p className="brand-sub">Message anyone on WhatsApp — no contacts needed.</p>
         </div>
         <div className="topbar-actions">

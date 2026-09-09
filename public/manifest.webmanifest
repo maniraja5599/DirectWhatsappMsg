@@ -1,6 +1,6 @@
 {
-  "name": "PingGo — Chat Without Saving Contacts",
-  "short_name": "PingGo",
+  "name": "WhatsGo — Chat Without Saving Contacts",
+  "short_name": "WhatsGo",
   "description": "Open a WhatsApp chat for any number with an optional message. Save reusable messages. Private and mobile-first.",
   "id": ".",
   "start_url": ".",
@@ -8,7 +8,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#0D9488",
+  "theme_color": "#047857",
   "categories": ["utilities", "productivity", "communication"],
   "icons": [
     {
