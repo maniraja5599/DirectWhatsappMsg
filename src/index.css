@@ -116,6 +116,8 @@ html {
 
 body {
   margin: 0;
+  overflow-x: hidden;
+  overflow-x: clip;
   font-family:
     system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
@@ -150,6 +152,10 @@ body {
   flex: 1;
 }
 
+.app-shell--banner {
+  padding-bottom: calc(80px + var(--safe-bottom));
+}
+
 @media (min-width: 720px) {
   .app-shell {
     padding-top: calc(24px + var(--safe-top));
@@ -161,19 +167,15 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 2px 2px;
+  padding: 10px 2px 4px;
 }
 
 .topbar-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex: none;
-}
-
-.install-btn {
-  white-space: nowrap;
 }
 
 .theme-btn {
@@ -203,15 +205,49 @@ body {
 
 .brand-title {
   margin: 0;
-  font-size: 19px;
+  font-size: 17px;
   line-height: 1.2;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.bt-short {
+  display: none;
+}
+
+/* Small phones: show short brand name */
+@media (max-width: 560px) {
+  .bt-full {
+    display: none;
+  }
+
+  .bt-short {
+    display: inline;
+  }
+}
+
+/* Very small phones: hide subtitle to save vertical space */
+@media (max-width: 420px) {
+  .brand-sub {
+    display: none;
+  }
+
+  .brand-title {
+    font-size: 16px;
+  }
 }
 
 .brand-sub {
   margin: 1px 0 0;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 .field-note {
@@ -224,27 +260,30 @@ body {
   text-align: center;
 }
 
-/* Settings rows + switch */
-.setting-row {
+/* Switch */
+
+.mode-btns {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.setting-row__text h3 {
-  margin: 0 0 2px;
-  font-size: 15px;
+.mode-btn {
+  flex: 1;
+  min-height: 38px !important;
+  font-size: 13px !important;
+  padding: 0 8px !important;
+  border-radius: 8px !important;
+  background: var(--surface) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
 }
 
-.setting-row__text p {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--text-muted);
+.mode-btn--active {
+  background: var(--wa-dark) !important;
+  border-color: var(--wa-dark) !important;
+  color: #fff !important;
 }
 
 .switch {
@@ -294,39 +333,90 @@ body {
   }
 }
 
-.section-head--modal {
-  margin: 14px 0 10px;
+/* ---------- settings header + sections ---------- */
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
 }
 
-.section-head--modal h3 {
+.settings-header__icon {
+  font-size: 22px;
+}
+
+.settings-header__text {
+  flex: 1;
+}
+
+.settings-header__text h2 {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 18px;
+}
+
+.settings-header__ver {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.settings-close {
+  width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-section {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.settings-section__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-section__head .btn {
+  margin-left: auto;
+}
+
+.settings-section__title {
+  margin: 0 0 2px;
+  font-size: 14.5px;
+}
+
+.settings-section__desc {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.settings-version {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 0 0;
+  opacity: 0.7;
 }
 
 .modal__actions--single {
   grid-template-columns: 1fr;
-}
-
-/* Very small phones: install button becomes icon-only so the
-   brand + theme + settings all fit on one line */
-@media (max-width: 420px) {
-  .brand-sub {
-    display: none;
-  }
-
-  .brand-title {
-    font-size: 18px;
-  }
-
-  .install-btn {
-    font-size: 0;
-    padding: 0 12px;
-    gap: 0;
-  }
-
-  .install-btn > span {
-    font-size: 16px;
-  }
 }
 
 .card--hero {
@@ -527,6 +617,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   text-decoration: none;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .btn:active {
@@ -644,8 +735,15 @@ body {
   width: auto;
   margin-top: 0;
   min-height: 54px;
-  font-size: 16px;
-  padding: 0 8px;
+  font-size: 15px;
+  padding: 0 6px;
+}
+
+@media (max-width: 360px) {
+  .btn--duo {
+    font-size: 13px;
+    min-height: 50px;
+  }
 }
 
 .btn-row {
@@ -733,6 +831,21 @@ body {
   list-style: none;
 }
 
+.recent-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.btn--recent {
+  margin-top: 0 !important;
+  font-size: 14px !important;
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .saved-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -776,6 +889,36 @@ body {
   min-height: 44px;
   font-size: 14px;
   padding: 0 6px;
+  min-width: 0;
+}
+
+.app-duo .btn {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Small phones: action buttons go 2x2 so labels never wrap/cramp */
+@media (max-width: 400px) {
+  .saved-card__actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .modal .dev-row {
+    grid-template-columns: 1fr;
+  }
+
+  .section-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+}
+
+.dev-row .btn {
+  text-decoration: none;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .btn--use {
@@ -847,10 +990,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-}
-
-.dev-row .btn {
-  text-decoration: none;
 }
 
 /* ---------- modal ---------- */
@@ -970,4 +1109,77 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ---------- install banner ---------- */
+.install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + var(--safe-bottom));
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.install-banner--visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.install-banner__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 0;
+}
+
+.install-banner__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.install-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.install-banner__btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.install-banner__close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+@media (max-width: 420px) {
+  .install-banner__text span:last-child {
+    font-size: 13px;
+  }
 }

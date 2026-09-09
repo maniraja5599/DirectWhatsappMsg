@@ -5,16 +5,19 @@ import SettingsModal from './components/SettingsModal';
 import Toast from './components/Toast';
 import { DEFAULT_COUNTRY_DIAL, detectCountryFromDigits, extractPhoneFromText, normalizePhoneNumber } from './lib/phone';
 import { MAX_MESSAGE_LENGTH, buildIntentUrl, buildWhatsAppUrl, packageForTarget, supportsAppIntents, type ChatAppTarget } from './lib/whatsapp';
-import { readClipboardText, queryClipboardReadState } from './lib/clipboard';
+import { isIosDevice, readClipboardText, queryClipboardReadState } from './lib/clipboard';
 import { usePwaInstall } from './lib/pwa';
 import { useTheme } from './lib/theme';
 import {
+  addRecentNumber,
   deleteMessage,
+  getRecentNumbers,
   getSavedMessages,
   incrementUseCount,
   saveMessage,
   seedIfEmpty,
   updateMessage,
+  type RecentNumber,
   type SavedMessage,
 } from './lib/storage';
 
@@ -22,7 +25,8 @@ type Status = { kind: 'success' | 'error' | 'info'; text: string } | null;
 
 const DRAFT_KEY = 'wa-direct:draft-message:v1';
 const TARGET_KEY = 'wa-direct:chat-target';
-const BUSINESS_KEY = 'wa-direct:show-business';
+const BUSINESS_MODE_KEY = 'wa-direct:business-mode';
+type BusinessMode = 'whatsapp' | 'business' | 'both';
 
 /**
  * Apply full international digits to the form: when the number carries a
@@ -66,26 +70,26 @@ export default function App() {
   const [pasting, setPasting] = useState(false);
   const [pasteNudge, setPasteNudge] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // Business button visibility — opt in/out from Settings. Default ON.
-  const [businessEnabled, setBusinessEnabled] = useState<boolean>(() => {
+  // Business mode: 'whatsapp' | 'business' | 'both'. Default 'both'.
+  const [businessMode, setBusinessMode] = useState<BusinessMode>(() => {
     try {
-      return localStorage.getItem(BUSINESS_KEY) !== '0';
+      const stored = localStorage.getItem(BUSINESS_MODE_KEY);
+      if (stored === 'whatsapp' || stored === 'business' || stored === 'both') return stored;
     } catch {
-      return true;
+      // ignore
     }
+    return 'both';
   });
 
-  const toggleBusiness = () => {
-    setBusinessEnabled((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem(BUSINESS_KEY, next ? '1' : '0');
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+  const setBusinessModePersist = (mode: BusinessMode) => {
+    setBusinessMode(mode);
+    try {
+      localStorage.setItem(BUSINESS_MODE_KEY, mode);
+    } catch {
+      // ignore
+    }
   };
+
   // Which app opens on keyboard Enter/Go — remembers the last tapped button.
   const [chatTarget, setChatTarget] = useState<ChatAppTarget>(() => {
     try {
@@ -105,6 +109,28 @@ export default function App() {
   });
   const { canInstall, showIosHint, install } = usePwaInstall();
   const { theme, toggle: toggleTheme } = useTheme();
+
+  const showBanner = canInstall || showIosHint;
+  const [bannerVisible, setBannerVisible] = useState(false);
+  const bannerShowTimer = useRef<number | undefined>(undefined);
+  const bannerHideTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!showBanner) return;
+    bannerShowTimer.current = window.setTimeout(() => setBannerVisible(true), 1500);
+    bannerHideTimer.current = window.setTimeout(() => {
+      setBannerVisible(false);
+    }, 6500);
+    return () => {
+      window.clearTimeout(bannerShowTimer.current);
+      window.clearTimeout(bannerHideTimer.current);
+    };
+  }, [showBanner]);
+
+  const dismissInstallBanner = () => {
+    setBannerVisible(false);
+    window.clearTimeout(bannerHideTimer.current);
+  };
 
   const phoneRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
@@ -250,7 +276,18 @@ export default function App() {
     try {
       const result = await readClipboardText();
       if (!result.ok) {
-        setClipboardStatus({ kind: 'error', text: result.message });
+        // iPhone shows its own system prompt on every read. If the user
+        // dismissed it (or the browser blocked it), explain exactly what
+        // to do and focus the field so long-press Paste is one step away.
+        const ios = isIosDevice();
+        setClipboardStatus({
+          kind: 'error',
+          text:
+            ios && result.reason !== 'empty'
+              ? 'iPhone asked for permission — tap Allow to paste, or long-press the number field and choose Paste.'
+              : result.message,
+        });
+        if (ios) phoneRef.current?.focus();
         return;
       }
       const found = extractPhoneFromText(result.text, countryCode);
@@ -276,9 +313,17 @@ export default function App() {
       return;
     }
     const outcome = await install();
-    if (outcome === 'accepted') showToast('App installed.');
-    else if (outcome === 'dismissed') showToast('Install dismissed.');
+    if (outcome === 'accepted') {
+      showToast('App installed.');
+      dismissInstallBanner();
+    } else if (outcome === 'dismissed') {
+      showToast('Install dismissed.');
+      dismissInstallBanner();
+    }
   };
+
+  // Recent numbers for quick re-send
+  const [recentNumbers, setRecentNumbers] = useState<RecentNumber[]>(() => getRecentNumbers());
 
   const openChat = (target: ChatAppTarget) => {
     setChatTarget(target);
@@ -308,9 +353,12 @@ export default function App() {
       setPhoneError('Please enter a valid mobile number.');
       return;
     }
-    const openingText = business ? 'Opening WhatsApp Business…' : 'Opening WhatsApp…';
+    const openingText = business ? 'Opening WA WhatsApp…' : 'Opening WhatsApp…';
     setWaStatus({ kind: 'info', text: openingText });
     showToast(openingText);
+    // Save to recent numbers
+    addRecentNumber(check.digits, countryCode);
+    setRecentNumbers(getRecentNumbers());
     // Direct navigation avoids popup blockers and works naturally on mobile.
     // Small delay lets the status render (and screen readers announce it).
     window.setTimeout(() => {
@@ -400,7 +448,7 @@ export default function App() {
   const messageTooLong = message.length > MAX_MESSAGE_LENGTH;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${showBanner ? ' app-shell--banner' : ''}`}>
       <header className="topbar">
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" role="presentation">
@@ -409,16 +457,14 @@ export default function App() {
             <path d="M29 20l11 7-11 7z" fill="#075E54" />
           </svg>
         </span>
-        <div>
-          <h1 className="brand-title">FiFTO WhatsDirect</h1>
+        <div className="brand-text">
+          <h1 className="brand-title" aria-label="FiFTO WhatsDirect">
+            <span className="bt-full" aria-hidden="true">FiFTO WhatsDirect</span>
+            <span className="bt-short" aria-hidden="true">FiFTO</span>
+          </h1>
           <p className="brand-sub">Message anyone on WhatsApp — no contacts needed.</p>
         </div>
         <div className="topbar-actions">
-          {(canInstall || showIosHint) && (
-            <button type="button" className="btn btn--ghost btn--small install-btn" onClick={handleInstall}>
-              <span aria-hidden="true">⬇</span> Install App
-            </button>
-          )}
           <button
             type="button"
             className="btn btn--ghost theme-btn"
@@ -448,7 +494,7 @@ export default function App() {
             e.preventDefault();
             // Keyboard Enter / mobile "Go" opens the chat directly
             // in the last-used app (WhatsApp or Business).
-            openChat(!businessEnabled ? 'personal' : chatTarget);
+            openChat(businessMode === 'business' ? 'business' : chatTarget);
           }}
         >
         {/* Number — the hero of the page */}
@@ -607,7 +653,7 @@ export default function App() {
               wa.me/{normalized.digits}
             </p>
           ) : null}
-          {businessEnabled ? (
+          {businessMode === 'both' ? (
             <div className="app-duo">
               <button
                 type="button"
@@ -621,25 +667,29 @@ export default function App() {
                 type="button"
                 className="btn btn--business btn--duo"
                 onClick={() => openChat('business')}
-                aria-label="Open chat in WhatsApp Business"
+                aria-label="Open chat in WA WhatsApp"
               >
-                <span aria-hidden="true">🏢</span> Business
+                <span aria-hidden="true">🏢</span> WA WhatsApp
               </button>
             </div>
+          ) : businessMode === 'business' ? (
+            <button
+              type="button"
+              className="btn btn--business"
+              onClick={() => openChat('business')}
+              aria-label="Open chat in WA WhatsApp"
+            >
+              <span aria-hidden="true">🏢</span> Open WA WhatsApp
+            </button>
           ) : (
-            <>
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={() => openChat('personal')}
-                aria-label="Open chat in WhatsApp"
-              >
-                <span aria-hidden="true">💬</span> Open WhatsApp
-              </button>
-              <p className="field-note field-note--center">
-                Need WhatsApp Business too? Turn it on in Settings ⚙️.
-              </p>
-            </>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => openChat('personal')}
+              aria-label="Open chat in WhatsApp"
+            >
+              <span aria-hidden="true">💬</span> Open WhatsApp
+            </button>
           )}
           {waStatus ? (
             <p className={`status status--${waStatus.kind}`} role="status">
@@ -653,6 +703,37 @@ export default function App() {
             Tip: press <kbd>Enter</kbd> on the keyboard to open directly.
           </p>
         </section>
+
+        {/* Recent numbers */}
+        {recentNumbers.length > 0 && (
+          <section className="card card--slim" aria-label="Recent numbers">
+            <div className="section-head">
+              <h2>Recent</h2>
+              <span className="count-pill" aria-label={`${recentNumbers.length} recent`}>
+                {recentNumbers.length}
+              </span>
+            </div>
+            <ul className="recent-list">
+              {recentNumbers.map((r) => (
+                <li key={r.phone + r.countryCode}>
+                  <button
+                    type="button"
+                    className="btn btn--secondary btn--recent"
+                    onClick={() => {
+                      setCountryCode(r.countryCode);
+                      setPhone(r.phone);
+                      setPhoneError(null);
+                      phoneRef.current?.focus();
+                      showToast('Number loaded.');
+                    }}
+                  >
+                    <span aria-hidden="true">📞</span> +{r.countryCode} {r.phone}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <footer className="footer">
           <p>
@@ -677,8 +758,8 @@ export default function App() {
       <SettingsModal
         open={settingsOpen}
         messages={saved}
-        businessEnabled={businessEnabled}
-        onToggleBusiness={toggleBusiness}
+        businessMode={businessMode}
+        onSetBusinessMode={setBusinessModePersist}
         onClose={() => setSettingsOpen(false)}
         onUse={handleUseMessage}
         onEdit={openEditEditor}
@@ -701,6 +782,24 @@ export default function App() {
       />
 
       <Toast toast={toast} />
+
+      {showBanner && (
+        <div className={`install-banner ${bannerVisible ? 'install-banner--visible' : ''}`} role="status" aria-live="polite">
+          <div className="install-banner__text">
+            <span className="install-banner__icon" aria-hidden="true">📲</span>
+            <span>{showIosHint ? 'Add to Home Screen for the best experience.' : 'Install this app on your device.'}</span>
+          </div>
+          <div className="install-banner__actions">
+            <button type="button" className="btn btn--wa install-banner__btn" onClick={handleInstall}>
+              Install
+            </button>
+            <button type="button" className="btn btn--ghost install-banner__close" onClick={dismissInstallBanner} aria-label="Dismiss">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="sr-only" aria-live="polite">
         {clipboardStatus?.text} {waStatus?.text} {phoneError}
       </div>

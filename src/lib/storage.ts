@@ -138,3 +138,59 @@ export function validateSavedMessage(title: string, body: string): string | null
   if (title.length > 80) return 'Title is too long (max 80 characters).';
   return null;
 }
+
+const INSTALL_DISMISSED_KEY = 'wa-direct:install-dismissed:v1';
+
+export function isInstallDismissed(): boolean {
+  try {
+    return localStorage.getItem(INSTALL_DISMISSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function markInstallDismissed(): void {
+  try {
+    localStorage.setItem(INSTALL_DISMISSED_KEY, '1');
+  } catch {
+    // ignore
+  }
+}
+
+const RECENT_KEY = 'wa-direct:recent-numbers:v1';
+const MAX_RECENT = 5;
+
+export interface RecentNumber {
+  phone: string;
+  countryCode: string;
+  lastUsed: string;
+}
+
+export function getRecentNumbers(): RecentNumber[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (r: unknown): r is RecentNumber =>
+        typeof r === 'object' &&
+        r !== null &&
+        typeof (r as Record<string, unknown>)['phone'] === 'string' &&
+        typeof (r as Record<string, unknown>)['countryCode'] === 'string',
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function addRecentNumber(phone: string, countryCode: string): void {
+  if (!phone.trim()) return;
+  const list = getRecentNumbers().filter((r) => !(r.phone === phone && r.countryCode === countryCode));
+  list.unshift({ phone, countryCode, lastUsed: new Date().toISOString() });
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+  } catch {
+    // ignore
+  }
+}

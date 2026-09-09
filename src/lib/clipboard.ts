@@ -51,6 +51,23 @@ export function isClipboardLikelySupported(): boolean {
 export type ClipboardPermissionState = 'granted' | 'denied' | 'prompt' | 'unsupported';
 
 /**
+ * iPhone / iPad detection (including iPadOS desktop-mode Safari).
+ * iOS shows its own system "paste?" prompt on every clipboard read and
+ * needs an explicit tap — so the app guides iOS users specifically.
+ */
+export function isIosDevice(): boolean {
+  try {
+    if (typeof navigator === 'undefined') return false;
+    const nav = navigator as Navigator & { platform?: string; maxTouchPoints?: number };
+    const ua = typeof nav.userAgent === 'string' ? nav.userAgent : '';
+    if (/iphone|ipad|ipod/i.test(ua)) return true;
+    return nav.platform === 'MacIntel' && (nav.maxTouchPoints ?? 0) > 1;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Check the clipboard-read permission WITHOUT triggering any prompt.
  * Used to decide whether a silent auto-paste attempt is even allowed —
  * we never pop a permission dialog on the user's behalf.
