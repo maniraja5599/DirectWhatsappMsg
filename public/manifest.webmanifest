@@ -1,0 +1,33 @@
+{
+  "name": "TapChat — Chat Without Saving Contacts",
+  "short_name": "TapChat",
+  "description": "Open a WhatsApp chat for any number with an optional message. Save reusable messages. Private and mobile-first.",
+  "id": ".",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0B9E5D",
+  "categories": ["utilities", "productivity", "communication"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
