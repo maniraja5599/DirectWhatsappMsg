@@ -8,6 +8,7 @@ import { MAX_MESSAGE_LENGTH, buildIntentUrl, buildWhatsAppUrl, packageForTarget,
 import { isIosDevice, readClipboardText, queryClipboardReadState } from './lib/clipboard';
 import { usePwaInstall } from './lib/pwa';
 import { useTheme } from './lib/theme';
+import { canShareFiles, shareToWhatsApp, type ShareResult } from './lib/share';
 import {
   addRecentNumber,
   deleteMessage,
@@ -107,6 +108,34 @@ export default function App() {
       return false;
     }
   });
+
+  // Image attachment for Web Share API
+  const [attachedImage, setAttachedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Image too large (max 10MB).');
+      return;
+    }
+    setAttachedImage(file);
+    const url = URL.createObjectURL(file);
+    setImagePreview(url);
+  };
+
+  const removeImage = () => {
+    setAttachedImage(null);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
   const { canInstall, showIosHint, install } = usePwaInstall();
   const { theme, toggle: toggleTheme } = useTheme();
 
@@ -325,7 +354,7 @@ export default function App() {
   // Recent numbers for quick re-send
   const [recentNumbers, setRecentNumbers] = useState<RecentNumber[]>(() => getRecentNumbers());
 
-  const openChat = (target: ChatAppTarget) => {
+  const openChat = async (target: ChatAppTarget) => {
     setChatTarget(target);
     try {
       localStorage.setItem(TARGET_KEY, target);
@@ -341,11 +370,30 @@ export default function App() {
     }
     setPhoneError(null);
     const business = target === 'business';
+
+    // If image is attached and Web Share API supports files, share directly
+    if (attachedImage && canShareFiles()) {
+      const openingText = business ? 'Sharing image to WA WhatsApp…' : 'Sharing image to WhatsApp…';
+      setWaStatus({ kind: 'info', text: openingText });
+      showToast(openingText);
+      addRecentNumber(check.digits, countryCode);
+      setRecentNumbers(getRecentNumbers());
+      const result: ShareResult = await shareToWhatsApp(check.digits, message, attachedImage);
+      if (result === 'shared') {
+        showToast('Image shared.');
+        removeImage();
+      } else if (result === 'cancelled') {
+        setWaStatus(null);
+      } else if (result === 'unsupported') {
+        // Fall through to text-only
+      } else {
+        showToast('Could not share image. Sending text instead.');
+      }
+      if (result !== 'unsupported') return;
+    }
+
     let url: string;
     try {
-      // On Chromium Android, target the chosen app explicitly so users with
-      // BOTH apps go straight to the right one. Anywhere else (or when the
-      // app is missing) fall back to the normal wa.me link / web page.
       url = supportsAppIntents()
         ? buildIntentUrl(check.digits, message, packageForTarget(target))
         : buildWhatsAppUrl(check.digits, message);
@@ -356,11 +404,8 @@ export default function App() {
     const openingText = business ? 'Opening WA WhatsApp…' : 'Opening WhatsApp…';
     setWaStatus({ kind: 'info', text: openingText });
     showToast(openingText);
-    // Save to recent numbers
     addRecentNumber(check.digits, countryCode);
     setRecentNumbers(getRecentNumbers());
-    // Direct navigation avoids popup blockers and works naturally on mobile.
-    // Small delay lets the status render (and screen readers announce it).
     window.setTimeout(() => {
       window.location.href = url;
     }, 120);
@@ -645,6 +690,39 @@ export default function App() {
             </div>
           )}
         </section>
+
+        {/* Image attachment */}
+        {canShareFiles() && (
+          <section className="card card--slim" aria-label="Attach image">
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/*"
+              className="sr-only"
+              onChange={handleImageSelect}
+            />
+            {imagePreview ? (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Attached image preview" className="image-preview__img" />
+                <button type="button" className="image-preview__remove" onClick={removeImage} aria-label="Remove image">
+                  ✕
+                </button>
+                <p className="image-preview__name">{attachedImage?.name}</p>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn--secondary btn--nomargin"
+                onClick={() => imageInputRef.current?.click()}
+              >
+                <span aria-hidden="true">📷</span> Add Image
+              </button>
+            )}
+            {imagePreview && (
+              <p className="field-note">Image will be shared directly when you tap a WhatsApp button.</p>
+            )}
+          </section>
+        )}
 
         {/* Open chat */}
         <section className="card" aria-label="Open chat">
