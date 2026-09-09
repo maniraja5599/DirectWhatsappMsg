@@ -91,6 +91,24 @@ export default function SettingsModal({
           </ul>
         )}
 
+        <div className="dev-block">
+          <h3>Developer</h3>
+          <p className="dev-name">Mani Raja</p>
+          <div className="dev-row">
+            <a className="btn btn--ghost btn--small" href="tel:+918300030123">
+              📞 +91 83000 30123
+            </a>
+            <a
+              className="btn btn--ghost btn--small"
+              href="https://instagram.com/maniraja__"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              📷 @maniraja__
+            </a>
+          </div>
+        </div>
+
         <div className="modal__actions modal__actions--single">
           <button type="button" className="btn btn--cancel" onClick={onClose}>
             Done

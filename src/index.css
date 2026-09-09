@@ -778,6 +778,51 @@ body {
   padding: 8px 8px 0;
 }
 
+.footer__credit {
+  margin-top: 6px;
+}
+
+.footer a {
+  color: var(--wa-green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+:root[data-theme='dark'] .footer a {
+  color: var(--wa-bright);
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.dev-block {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.dev-block h3 {
+  margin: 0 0 2px;
+  font-size: 15.5px;
+}
+
+.dev-name {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.dev-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dev-row .btn {
+  text-decoration: none;
+}
+
 /* ---------- modal ---------- */
 
 .modal-backdrop {

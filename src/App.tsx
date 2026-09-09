@@ -384,18 +384,21 @@ export default function App() {
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" role="presentation">
             <path
-              d="M32 12c-10.5 0-19 8-19 17.9 0 3.2.9 6.3 2.5 8.9L13 49.5l11.2-2.8c2.3 1.2 5 1.9 7.8 1.9 10.5 0 19-8 19-17.9S42.5 12 32 12z"
+              d="M10.5 33.5 53.5 10.5 35.5 53.5 28.5 40.5l-13 4z"
               fill="#fff"
             />
             <path
-              d="M36.5 20 25 34h6.6l-3.1 11L40.5 31h-6.9l2.9-11z"
-              fill="#075E54"
+              d="M28.5 40.5 53.5 10.5"
+              stroke="#075E54"
+              stroke-width="3"
+              stroke-linecap="round"
+              fill="none"
             />
           </svg>
         </span>
         <div>
-          <h1 className="brand-title">TapChat</h1>
-          <p className="brand-sub">Chat anyone on WhatsApp — no need to save contacts.</p>
+          <h1 className="brand-title">PingGo</h1>
+          <p className="brand-sub">Message anyone on WhatsApp — no contacts needed.</p>
         </div>
         <div className="topbar-actions">
           {(canInstall || showIosHint) && (
@@ -627,6 +630,16 @@ export default function App() {
             Private by design — numbers, clipboard and messages stay on this device.
             <br />
             Works with WhatsApp &amp; WhatsApp Business.
+          </p>
+          <p className="footer__credit">
+            Built by Mani Raja •{' '}
+            <a
+              href="https://instagram.com/maniraja__"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              📷 @maniraja__
+            </a>
           </p>
         </footer>
         </form>
