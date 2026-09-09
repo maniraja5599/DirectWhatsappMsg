@@ -389,7 +389,7 @@ export default function App() {
           </svg>
         </span>
         <div>
-          <h1 className="brand-title">WhatsGo</h1>
+          <h1 className="brand-title">FiFTO WhatsDirect</h1>
           <p className="brand-sub">Message anyone on WhatsApp — no contacts needed.</p>
         </div>
         <div className="topbar-actions">
