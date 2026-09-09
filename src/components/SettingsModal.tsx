@@ -5,6 +5,8 @@ import SavedMessageCard from './SavedMessageCard';
 interface Props {
   open: boolean;
   messages: SavedMessage[];
+  businessEnabled: boolean;
+  onToggleBusiness: () => void;
   onClose: () => void;
   onUse: (m: SavedMessage) => void;
   onEdit: (m: SavedMessage) => void;
@@ -16,6 +18,8 @@ interface Props {
 export default function SettingsModal({
   open,
   messages,
+  businessEnabled,
+  onToggleBusiness,
   onClose,
   onUse,
   onEdit,
@@ -61,6 +65,23 @@ export default function SettingsModal({
       >
         <h2 id="settings-title">Settings</h2>
         <p className="modal__sub">Saved messages live only in this browser. Nothing is uploaded.</p>
+
+        <div className="setting-row">
+          <div className="setting-row__text">
+            <h3>WhatsApp Business button</h3>
+            <p>Show the Business option next to WhatsApp on the main screen.</p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={businessEnabled}
+            aria-label="Show WhatsApp Business button"
+            className={`switch${businessEnabled ? ' switch--on' : ''}`}
+            onClick={onToggleBusiness}
+          >
+            <span className="switch__knob" aria-hidden="true" />
+          </button>
+        </div>
 
         <div className="section-head section-head--modal">
           <h3>Saved messages</h3>

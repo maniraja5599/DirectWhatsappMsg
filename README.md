@@ -44,6 +44,8 @@ npm run lint     # oxlint
    explicitly (`com.whatsapp` / `com.whatsapp.w4b`) with automatic fallback
    to WhatsApp Web when it isn't installed; elsewhere the OS handles the
    `wa.me` link. (Bonus: Ctrl/Cmd+Enter sends from the message box.)
+   Don't need the Business button? Hide it from **Settings ⚙️** — the page
+   will show a hint about where to turn it back on.
 
 ## Install as an app (PWA)- Real PNG icons + manifest + offline service worker included.
 - Android Chrome: tap the **⬇ Install App** button in the header

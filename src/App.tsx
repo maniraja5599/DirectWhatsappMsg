@@ -22,6 +22,7 @@ type Status = { kind: 'success' | 'error' | 'info'; text: string } | null;
 
 const DRAFT_KEY = 'wa-direct:draft-message:v1';
 const TARGET_KEY = 'wa-direct:chat-target';
+const BUSINESS_KEY = 'wa-direct:show-business';
 
 /**
  * Apply full international digits to the form: when the number carries a
@@ -65,6 +66,26 @@ export default function App() {
   const [pasting, setPasting] = useState(false);
   const [pasteNudge, setPasteNudge] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Business button visibility — opt in/out from Settings. Default ON.
+  const [businessEnabled, setBusinessEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(BUSINESS_KEY) !== '0';
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleBusiness = () => {
+    setBusinessEnabled((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem(BUSINESS_KEY, next ? '1' : '0');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
   // Which app opens on keyboard Enter/Go — remembers the last tapped button.
   const [chatTarget, setChatTarget] = useState<ChatAppTarget>(() => {
     try {
@@ -427,7 +448,7 @@ export default function App() {
             e.preventDefault();
             // Keyboard Enter / mobile "Go" opens the chat directly
             // in the last-used app (WhatsApp or Business).
-            openChat(chatTarget);
+            openChat(!businessEnabled ? 'personal' : chatTarget);
           }}
         >
         {/* Number — the hero of the page */}
@@ -586,24 +607,40 @@ export default function App() {
               wa.me/{normalized.digits}
             </p>
           ) : null}
-          <div className="app-duo">
-            <button
-              type="button"
-              className="btn btn--primary btn--duo"
-              onClick={() => openChat('personal')}
-              aria-label="Open chat in WhatsApp"
-            >
-              <span aria-hidden="true">💬</span> WhatsApp
-            </button>
-            <button
-              type="button"
-              className="btn btn--business btn--duo"
-              onClick={() => openChat('business')}
-              aria-label="Open chat in WhatsApp Business"
-            >
-              <span aria-hidden="true">🏢</span> Business
-            </button>
-          </div>
+          {businessEnabled ? (
+            <div className="app-duo">
+              <button
+                type="button"
+                className="btn btn--primary btn--duo"
+                onClick={() => openChat('personal')}
+                aria-label="Open chat in WhatsApp"
+              >
+                <span aria-hidden="true">💬</span> WhatsApp
+              </button>
+              <button
+                type="button"
+                className="btn btn--business btn--duo"
+                onClick={() => openChat('business')}
+                aria-label="Open chat in WhatsApp Business"
+              >
+                <span aria-hidden="true">🏢</span> Business
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => openChat('personal')}
+                aria-label="Open chat in WhatsApp"
+              >
+                <span aria-hidden="true">💬</span> Open WhatsApp
+              </button>
+              <p className="field-note field-note--center">
+                Need WhatsApp Business too? Turn it on in Settings ⚙️.
+              </p>
+            </>
+          )}
           {waStatus ? (
             <p className={`status status--${waStatus.kind}`} role="status">
               {waStatus.text}
@@ -637,31 +674,11 @@ export default function App() {
         </form>
       </main>
 
-      {/* Sticky mobile CTA mirrors both primary actions (mobile only via CSS) */}
-      <div className="sticky-cta">
-        <div className="sticky-cta__inner sticky-cta__dual">
-          <button
-            type="button"
-            className="btn btn--primary btn--duo"
-            onClick={() => openChat('personal')}
-            aria-label="Open chat in WhatsApp"
-          >
-            <span aria-hidden="true">💬</span> WhatsApp
-          </button>
-          <button
-            type="button"
-            className="btn btn--business btn--duo"
-            onClick={() => openChat('business')}
-            aria-label="Open chat in WhatsApp Business"
-          >
-            <span aria-hidden="true">🏢</span> Business
-          </button>
-        </div>
-      </div>
-
       <SettingsModal
         open={settingsOpen}
         messages={saved}
+        businessEnabled={businessEnabled}
+        onToggleBusiness={toggleBusiness}
         onClose={() => setSettingsOpen(false)}
         onUse={handleUseMessage}
         onEdit={openEditEditor}
