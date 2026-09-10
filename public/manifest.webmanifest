@@ -3,14 +3,50 @@
   "short_name": "FiFTO Direct",
   "description": "Open a WhatsApp chat for any number with an optional message. Save reusable messages. Private and mobile-first.",
   "version": "1.1.0",
-  "id": ".",
-  "start_url": ".",
-  "scope": ".",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#047857",
   "categories": ["utilities", "productivity", "communication"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e89267f4-5d17-41e0-9707-7b1f591d8a38",
+  "shortcuts": [
+    {
+      "name": "Open WhatsApp",
+      "short_name": "WhatsApp",
+      "url": "/?target=personal",
+      "description": "Quickly open a WhatsApp chat"
+    },
+    {
+      "name": "Open WA WhatsApp",
+      "short_name": "WA Business",
+      "url": "/?target=business",
+      "description": "Quickly open a WA WhatsApp chat"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of FiFTO Direct App"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop view of FiFTO Direct App"
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",
