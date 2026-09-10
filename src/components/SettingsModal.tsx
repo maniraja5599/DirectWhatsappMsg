@@ -144,7 +144,7 @@ export default function SettingsModal({
           <div className="settings-section">
             <h3 className="settings-section__title">About</h3>
             <p className="settings-section__desc">
-              FiFTO WhatsDirect — quickly open WhatsApp chats for any number with an optional message.
+              FiFTO Direct App — quickly open WhatsApp chats for any number with an optional message.
               Private by design: numbers, clipboard, and messages stay on this device. Nothing is uploaded.
             </p>
             <p className="settings-section__desc">
@@ -161,7 +161,7 @@ export default function SettingsModal({
             </div>
           </div>
 
-          <p className="settings-version">v{VERSION} · FiFTO WhatsDirect</p>
+          <p className="settings-version">v{VERSION} · FiFTO Direct App</p>
         </div>
 
         <div className="modal__actions modal__actions--single">

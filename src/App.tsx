@@ -497,14 +497,13 @@ export default function App() {
       <header className="topbar">
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" role="presentation">
-            <rect x="12" y="12" width="40" height="28" rx="10" fill="#fff" />
-            <path d="M24 40v9l9-9z" fill="#fff" />
-            <path d="M29 20l11 7-11 7z" fill="#075E54" />
+            <path d="M16 16h18c8 0 14 6 14 14s-6 14-14 14H16V16z" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+            <path d="M22 30l6 6 10-12" fill="none" stroke="#25d366" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
         <div className="brand-text">
-          <h1 className="brand-title" aria-label="FiFTO WhatsDirect">
-            <span className="bt-full" aria-hidden="true">FiFTO WhatsDirect</span>
+          <h1 className="brand-title" aria-label="FiFTO Direct App">
+            <span className="bt-full" aria-hidden="true">FiFTO Direct App</span>
             <span className="bt-short" aria-hidden="true">FiFTO</span>
           </h1>
           <p className="brand-sub">Message anyone on WhatsApp — no contacts needed.</p>
@@ -544,6 +543,19 @@ export default function App() {
         >
         {/* Number — the hero of the page */}
         <section className="card card--hero" aria-label="Mobile number">
+          <button
+            type="button"
+            className={`btn btn--secondary${pasteNudge ? ' btn--nudge' : ''}`}
+            onClick={handlePasteNumber}
+            disabled={pasting}
+          >
+            <span aria-hidden="true">📋</span> {pasting ? 'Reading…' : 'Paste Number'}
+          </button>
+          {clipboardStatus ? (
+            <p className={`status status--${clipboardStatus.kind}`} role="status">
+              {clipboardStatus.text}
+            </p>
+          ) : null}
           <label className="label label--hero" htmlFor="phone-input">
             Mobile number
           </label>
@@ -588,19 +600,6 @@ export default function App() {
           {phoneError ? (
             <p className="field-error" id="phone-error" role="alert">
               {phoneError}
-            </p>
-          ) : null}
-          <button
-            type="button"
-            className={`btn btn--secondary${pasteNudge ? ' btn--nudge' : ''}`}
-            onClick={handlePasteNumber}
-            disabled={pasting}
-          >
-            <span aria-hidden="true">📋</span> {pasting ? 'Reading…' : 'Paste Number'}
-          </button>
-          {clipboardStatus ? (
-            <p className={`status status--${clipboardStatus.kind}`} role="status">
-              {clipboardStatus.text}
             </p>
           ) : null}
         </section>

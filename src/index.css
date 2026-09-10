@@ -849,18 +849,27 @@ body {
 }
 
 .recent-list {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  gap: 8px;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.recent-list::-webkit-scrollbar {
+  display: none;
 }
 
 .btn--recent {
   margin-top: 0 !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   justify-content: flex-start;
   text-align: left;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .saved-card {
